@@ -1,0 +1,24 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {trim,derivative,step,coefficients,rotate,inverseRotate,atmosphere,loads,propulsion,localAirflow,AIRCRAFT,airspeeds} from './dist/physics.mjs';
+test('body to NED round trip',()=>{const q=[Math.cos(.4),0,Math.sin(.4),0],v=[3,7,-4];const r=inverseRotate(q,rotate(q,v));r.forEach((x,i)=>assert.ok(Math.abs(x-v[i])<1e-12));});
+test('ISA sea level and 10 km',()=>{assert.equal(atmosphere(0).rho,1.225);assert.ok(Math.abs(atmosphere(10000).rho-.4135)<.001);});
+test('trim equilibria over cruise envelope',()=>{for(const V of [45,52,60])for(const h of [0,900,2500]){const t=trim(V,h),d=derivative(t.state,t.controls);assert.ok(t.controls.throttle>=0&&t.controls.throttle<=1);for(const i of [3,4,5,6,7,8,9,10,11,12])assert.ok(Math.abs(d[i])<1e-9,`residual ${i}: ${d[i]}`);}});
+test('60-second trimmed flight and unit quaternion',()=>{const t=trim();let s=t.state;for(let i=0;i<14400;i++)s=step(s,t.controls,1/240);assert.ok(Math.abs(s[2]+900)<.01);assert.ok(Math.abs(Math.hypot(...s.slice(6,10))-1)<1e-12);});
+test('elevator produces expected pitch acceleration',()=>{const t=trim();t.state[13]-=.1;assert.ok(derivative(t.state,t.controls)[11]>0);});
+test('post stall lift decreases',()=>{assert.ok(coefficients(.5,0).CL<coefficients(.28,0).CL);});
+test('RK4 convergence under disturbed flight',()=>{const t=trim(),c={...t.controls,elevator:t.controls.elevator-.02,aileron:.03};function run(dt){let s=t.state;for(let i=0;i<Math.round(2/dt);i++)s=step(s,c,dt);return s;}const a=run(1/120),b=run(1/240),ref=run(1/960);const err=x=>Math.hypot(...x.map((v,i)=>v-ref[i]));assert.ok(err(b)<err(a)/8);});
+
+test('fixed AoA lift and drag grow with speed squared',()=>{const t=trim(),a=[...t.state],b=[...a];a[16]=b[16]=0;for(let i=3;i<6;i++)b[i]*=1.2;const fa=loads(a),fb=loads(b);assert.ok(Math.abs(fb.lift/fa.lift-1.44)<1e-12);assert.ok(Math.abs(fb.drag/fa.drag-1.44)<1e-12);assert.ok(Math.abs(fb.dynamicPressure/fa.dynamicPressure-1.44)<1e-12);});
+test('higher trimmed speed lowers AoA rather than increasing level-flight lift',()=>{const slow=trim(45,900),fast=trim(60,900);assert.ok(fast.alpha<slow.alpha);assert.ok(Math.abs(loads(fast.state).lift/loads(slow.state).lift-1)<.02);});
+test('zero airflow and power give zero aerodynamic force',()=>{const s=trim().state;s.fill(0,3,6);s.fill(0,10,13);s[16]=0;const f=loads(s);assert.equal(Math.hypot(...f.force),0);assert.equal(Math.hypot(...f.moment),0);assert.equal(f.dynamicPressure,0);});
+test('drag always removes energy, including backward and stalled airflow',()=>{for(const angle of [-3,-1.5,-.6,-.1,0,.2,.5,1.5,3]){const s=trim().state;s[3]=50*Math.cos(angle);s[4]=8;s[5]=50*Math.sin(angle);s[16]=0;const f=loads(s);assert.ok(f.drag>=0);assert.ok(f.aeroForce.reduce((v,x,i)=>v+x*s[3+i],0)<=0);assert.ok(Math.abs(f.drag-f.profileDrag-f.inducedDrag)<1e-8);}});
+test('wing local airflow provides roll damping and pitch restoring moment',()=>{const t=trim(),s=[...t.state];s[10]=.2;assert.ok(loads(s).moment[0]<0);s[10]=0;s[11]=.1;assert.ok(loads(s).moment[1]<0);s[11]=0;const alpha=t.alpha+.01;s[3]=52*Math.cos(alpha);s[5]=52*Math.sin(alpha);assert.ok(loads(s).moment[1]<0);});
+test('propeller finite static thrust and power balance',()=>{const staticProp=propulsion(0,1.225,1),cruise=propulsion(60,1.225,1);assert.ok(staticProp.thrust>cruise.thrust);assert.ok(staticProp.thrust<10000);assert.ok(Math.abs(cruise.thrust*(60+cruise.inducedVelocity)-cruise.power*cruise.efficiency)<1e-7);assert.equal(propulsion(0,1.225,0).thrust,0);});
+test('off-center airflow obeys rigid-body kinematics',()=>{assert.deepEqual(localAirflow([50,0,0],[.1,.2,0],[-4,2,0]),[50,0,1]);});
+
+import {cleanStall,climbEstimate,cruiseAtPower,CRUISE_TARGETS} from './dist/performance.mjs';
+test('C172S clean stall matches 53 KCAS target at gross weight',()=>{const stall=cleanStall();assert.ok(Math.abs(stall.keas-53)<1);});
+test('C172S nine handbook cruise points within 3 KTAS',()=>{for(const target of CRUISE_TARGETS){const actual=cruiseAtPower(target.power,target.feet*.3048);assert.ok(Math.abs(actual-target.ktas)<3,JSON.stringify({target,actual}));}});
+test('C172S climb estimate at 74 KIAS stays within 50 fpm of 730',()=>{assert.ok(Math.abs(climbEstimate(73.2*.5144444444444445,0).fpm-730)<50);});
+test('C172S max sea level speed within 3 KTAS of 126',()=>{assert.ok(Math.abs(cruiseAtPower(1,0)-126)<3);});
+test('CAS agrees with TAS at sea level and falls below TAS at altitude',()=>{const sl=airspeeds(50,0),high=airspeeds(50,2438.4);assert.ok(Math.abs(sl.CAS-50)<1e-8);assert.ok(high.CAS<50);assert.ok(Math.abs(high.CAS-high.EAS)<.3);});
+test('gross weight and 180 hp are represented in SI',()=>{assert.ok(Math.abs(AIRCRAFT.mass-1156.6605435)<1e-8);assert.ok(Math.abs(AIRCRAFT.engine.power/745.699872-180)<1e-8);});

@@ -1,0 +1,46 @@
+{
+  "target": "Clean F-15C with two F100-PW-220 engines, gear up, no external stores, subsonic; matching weight/CG and measured input are required per test",
+  "referenceValidation": "blocked",
+  "sources": [
+    {
+      "id": "19790015808",
+      "title": "NASA TM-72861: Precision Controllability of the F-15 Airplane",
+      "url": "https://ntrs.nasa.gov/citations/19790015808",
+      "review": "Full PDF reviewed. Appendix printed pp. 12–13 documents control architecture and authority; Table 1, pp. 15–16, supplies dimensions and surface limits. Figures 8 and 11 contain tracking time histories, not full-stick roll tests.",
+      "eligibility": "design-reference",
+      "reason": "Used for pitch CAS ±10°, limiter breakpoints +5°/−19°, yaw CAS ±5°, washed-out pitch-rate feedback, and dimensional checks. Early F-15/PW-100, with control-system changes during testing: not matched F-15C flight-performance validation. Gains, taper shape, washout constants, virtual-stick gearing and combined roll authority remain estimates."
+    },
+    {
+      "id": "19920023620",
+      "title": "NASA TM-104255: Flight Testing and Simulation of an F-15 Airplane Using Throttles for Flight Control",
+      "url": "https://ntrs.nasa.gov/citations/19920023620",
+      "review": "Full PDF reviewed, particularly printed pp. 2 and 11\u201316; Figures 9, 10 and 14 contain measured response histories.",
+      "eligibility": "excluded",
+      "reason": "Preproduction F-15A with F100 EMD/PW-1128 engines and deliberately nonproduction low-power response. The illustrated comparison cases use throttles-only emergency control, gear down and emergency inlet positions. They do not validate our clean PW-229 stick response."
+    },
+    {
+      "id": "20030079970",
+      "title": "NASA TM-2003-212027: Real-Time Stability and Control Derivative Extraction From F-15 Flight Data",
+      "url": "https://ntrs.nasa.gov/citations/20030079970",
+      "review": "Official abstract reviewed; full PDF could not be retrieved in this environment.",
+      "eligibility": "pending",
+      "reason": "Modified research aircraft; useful identification methodology, but no matched numeric flight trace imported or qualified."
+    },
+    {
+      "id": "20090032249",
+      "title": "Pitch-Axis Aerodynamic Parameter Identification for NASA\u2019s F-15B",
+      "url": "https://ntrs.nasa.gov/citations/20090032249",
+      "review": "Official abstract reviewed; NTRS lists no available download.",
+      "eligibility": "excluded",
+      "reason": "Canard-equipped F-15B TN 837. Canard coupling and pitch instability do not match the current generic airframe."
+    },
+    {
+      "id": "20120013435",
+      "title": "NASA TM-2012-215978: Flight Test Results on the Stability and Control of the F-15 Quiet Spike Aircraft",
+      "url": "https://ntrs.nasa.gov/citations/20120013435",
+      "review": "Official abstract reviewed; full PDF exceeds the web reader\u2019s size limit.",
+      "eligibility": "pending",
+      "reason": "F-15B with telescoping nose boom. Baseline configurations may be useful, but baseline traces and complete test conditions have not been extracted or qualified."
+    }
+  ]
+}

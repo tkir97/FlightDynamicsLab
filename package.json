@@ -1,0 +1,9 @@
+{
+  "name": "flight-dynamics-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests.mjs render-tests.mjs map-tests.mjs jsbsim-tests.mjs worker-tests.mjs asset-tests.mjs report-tests.mjs missile-tests.mjs ai-tests.mjs radar-tests.mjs",
+    "validate:f15": "node scripts/f15-validation.mjs"
+  }
+}

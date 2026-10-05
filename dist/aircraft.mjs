@@ -1,0 +1,3 @@
+// Cessna 172S, flaps up, 2550 lb gross weight. See MODEL.md for provenance.
+// Surface positions, inertias, aerodynamic polar and propeller losses are estimates.
+export const AIRCRAFT={name:"Cessna 172S",mass:2550*.45359237,S:174*.09290304,b:11,c:1.493,I:[1285,1825,2667],wing:{panels:12,x:.15,z:-.75,dihedral:3*Math.PI/180,efficiency:.82,liftScale:1.09,cm:-.04,cd0:.018},tail:{S:21.9*.09290304,b:3.35,x:-15.7*.3048,z:-.1,incidence:-.02,efficiency:.8,downwash:.4},fin:{S:16.5*.09290304,b:1.7,x:-15.7*.3048,z:-.65,efficiency:.8},fuselage:{cd0:.013,sideArea:5.5},engine:{power:180*745.699872,diameter:76*.0254,efficiencyTable:[[0,.60],[38,.674],[45,.825],[52,.84],[65,.84],[80,.70]]}};
